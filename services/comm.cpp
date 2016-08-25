@@ -1857,8 +1857,10 @@ void LoginMsg::fill_from_channel(MsgChannel *c)
     c->read_environments(envs);
     *c >> nodename;
     *c >> netname;
-    printf("CHANGING NAME FROM %s to %s\n", c->name.c_str(), netname.c_str());
-    c->name = netname;
+    if (!netname.empty()) {
+      printf("CHANGING NAME FROM %s to %s\n", c->name.c_str(), netname.c_str());
+      c->name = netname;
+    }
     *c >> host_platform;
     uint32_t net_chroot_possible = 0;
     *c >> net_chroot_possible;
