@@ -1831,13 +1831,14 @@ void JobDoneMsg::send_to_channel(MsgChannel *c) const
     *c << flags;
 }
 
-LoginMsg::LoginMsg(unsigned int myport, const std::string &_nodename, const std::string _host_platform)
+LoginMsg::LoginMsg(unsigned int myport, const std::string &_nodename, const std::string &_netname, const std::string _host_platform)
     : Msg(M_LOGIN)
     , port(myport)
     , max_kids(0)
     , noremote(false)
     , chroot_possible(false)
     , nodename(_nodename)
+    , netname(_netname)
     , host_platform(_host_platform)
 {
 #ifdef HAVE_LIBCAP_NG
@@ -1855,6 +1856,9 @@ void LoginMsg::fill_from_channel(MsgChannel *c)
     *c >> max_kids;
     c->read_environments(envs);
     *c >> nodename;
+    *c >> netname;
+    printf("CHANGING NAME FROM %s to %s\n", c->name.c_str(), netname.c_str());
+    c->name = netname;
     *c >> host_platform;
     uint32_t net_chroot_possible = 0;
     *c >> net_chroot_possible;
@@ -1875,6 +1879,7 @@ void LoginMsg::send_to_channel(MsgChannel *c) const
     *c << max_kids;
     c->write_environments(envs);
     *c << nodename;
+    *c << netname;
     *c << host_platform;
     *c << chroot_possible;
 

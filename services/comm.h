@@ -294,10 +294,10 @@ public:
     }
 
     /* Attempt to get a conenction to the scheduler.
-    
-       Continue to call this while it returns NULL and timed_out() 
+
+       Continue to call this while it returns NULL and timed_out()
        returns false. If this returns NULL you should wait for either
-       more data on listen_fd() (use select), or a timeout of your own.  
+       more data on listen_fd() (use select), or a timeout of your own.
        */
     MsgChannel *try_get_scheduler();
 
@@ -624,7 +624,7 @@ public:
 class LoginMsg : public Msg
 {
 public:
-    LoginMsg(unsigned int myport, const std::string &_nodename, const std::string _host_platform);
+    LoginMsg(unsigned int myport, const std::string &_nodename, const std::string &_netname, const std::string _host_platform);
     LoginMsg()
         : Msg(M_LOGIN)
         , port(0) {}
@@ -638,6 +638,7 @@ public:
     bool noremote;
     bool chroot_possible;
     std::string nodename;
+    std::string netname;
     std::string host_platform;
 };
 

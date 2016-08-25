@@ -700,7 +700,7 @@ bool Daemon::send_scheduler(const Msg& msg)
 bool Daemon::reannounce_environments()
 {
     log_error() << "reannounce_environments " << endl;
-    LoginMsg lmsg(0, nodename, "");
+    LoginMsg lmsg(0, nodename, netname, "");
     lmsg.envs = available_environmnents(envbasedir);
     return send_scheduler(lmsg);
 }
@@ -885,6 +885,10 @@ int Daemon::scheduler_use_cs(UseCSMsg *msg)
         return 1;
     }
 
+    FILE *f = fopen("/tmp/icelog", "a");
+    fprintf(f, "scheduler_use_cs GOT A MSG msg->hostname %s remote_name %s msg->port %d daemon_port %d\n",
+            msg->hostname.c_str(), remote_name.c_str(), int(msg->port), daemon_port);
+    fclose(f);
     if (msg->hostname == remote_name && int(msg->port) == daemon_port) {
         c->usecsmsg = new UseCSMsg(msg->host_platform, "127.0.0.1", daemon_port, msg->job_id, true, 1,
                                    msg->matched_job_id);
@@ -1939,17 +1943,19 @@ bool Daemon::reconnect()
     int error = getsockname(scheduler->fd, (struct sockaddr*)&name, &len);
 
     if (!error) {
-        remote_name = inet_ntoa(name.sin_addr);
+        remote_name = netname.empty() ? inet_ntoa(name.sin_addr) : netname;
     } else {
         remote_name = string();
     }
+
+    printf("SHIT %s -> %s\n", remote_name.c_str(), netname.c_str());
 
     log_info() << "Connected to scheduler (I am known as " << remote_name << ")" << endl;
     current_load = -1000;
     gettimeofday(&last_stat, 0);
     icecream_load = 0;
 
-    LoginMsg lmsg(daemon_port, determine_nodename(), machine_name);
+    LoginMsg lmsg(daemon_port, determine_nodename(), netname, machine_name);
     lmsg.envs = available_environmnents(envbasedir);
     lmsg.max_kids = max_kids;
     lmsg.noremote = noremote;
